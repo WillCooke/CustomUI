@@ -359,3 +359,60 @@ namespace CustomUI
         }
     }
 }
+
+namespace Input
+{
+    class Button
+    {
+    public:
+        Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text);
+        bool CheckPress();
+        void Render();
+    private:
+        int X, Y;
+        int width, height;
+        CustomUI::RGBA boxColour;
+        CustomUI::RGBA textColour;
+        string text;
+    };
+    Button::Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text)
+    {
+        this->X = X;
+        this->Y = Y;
+        this->width = width;
+        this->height = height;
+        this->boxColour = boxColour;
+        this->textColour = textColour;
+        this->text = text;
+    }
+    
+    inline bool Button::CheckPress()
+    {
+        touchPosition touch_pos;
+        hidTouchRead(&touch_pos, hidTouchCount()-1);
+        //Pull the touch screen data
+        if(touch_pos.px > this->X)
+        {
+            if(touch_pos.px < this->X + width)
+            {
+                if(touch_pos.py > this->Y)
+                {
+                    if( touch_pos.py < this->Y + height)
+                    {
+                        return true;
+                }
+                }
+            }
+        }
+        return false;
+    }
+
+    inline void Button::Render()
+    {
+        SDL_Color boxClr = {boxColour.R, boxColour.G, boxColour.B, boxColour.A};
+        CustomUI::drawRect(X, Y, width, height, boxClr); //Render the box
+        SDL_Color textClr = {textColour.R, textColour.G, textColour.B, textColour.A};
+        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), 50);
+        CustomUI::drawText(X, Y, textClr, text, fnt); //Render the text
+    }
+}
