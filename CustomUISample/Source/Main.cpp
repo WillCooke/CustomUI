@@ -79,14 +79,14 @@ int main()
         if(button.CheckPress()) 
         {
             //Write to the file
-            IO::write("sdmc:/text.txt", "...is from 1919!");
+            IO::writeFile("sdmc:/text.txt", "...is from 1919!");
             //Reload the page!
             page1Load();
         }
         else if(button.CheckRelease())
         {
             //Write to the file
-            IO::write("sdmc:/text.txt", "The treaty of versailles...");
+            IO::writeFile("sdmc:/text.txt", "The treaty of versailles...");
             //Reload the page!
             page1Load();
         }

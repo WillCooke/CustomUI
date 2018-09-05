@@ -486,7 +486,7 @@ namespace IO
         
     }
 
-    bool write(string path, string data)
+    bool writeFile(string path, string data)
     {
         //Open the filestream with write permission
         FILE* file = fopen(path.c_str(), "w");
