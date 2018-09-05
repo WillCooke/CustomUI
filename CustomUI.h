@@ -359,8 +359,8 @@ namespace CustomUI
         }
     }
 }
-
-namespace Input
+//IO namespace by WillCooke
+namespace IO
 {
     class Button
     {
@@ -388,9 +388,10 @@ namespace Input
     
     inline bool Button::CheckPress()
     {
+        //Pull the touch screen data
         touchPosition touch_pos;
         hidTouchRead(&touch_pos, hidTouchCount()-1);
-        //Pull the touch screen data
+        
         if(touch_pos.px > this->X)
         {
             if(touch_pos.px < this->X + width)
@@ -412,7 +413,81 @@ namespace Input
         SDL_Color boxClr = {boxColour.R, boxColour.G, boxColour.B, boxColour.A};
         CustomUI::drawRect(X, Y, width, height, boxClr); //Render the box
         SDL_Color textClr = {textColour.R, textColour.G, textColour.B, textColour.A};
-        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), 50);
+        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), 10);
         CustomUI::drawText(X, Y, textClr, text, fnt); //Render the text
     }
+
+    class file
+    {
+    public:
+        file(string path);
+        void read();
+        void write(string data);
+    private:
+        string path;
+        string data;
+    };
+
+    file::file(string path)
+    {
+        this->path = path;
+    }
+
+    file::read()
+    {
+        //Open filestream with read permission
+        FILE* file = fopen(filename.c_str(), "r");
+        //Was a file read
+        if(!file)
+        {
+            //If no exit function with no value
+            return NULL;
+        }
+
+        //---Obtain file size---
+        //Set "cursor" position to end of file
+        fseek(file, 0, SEEK_END);
+        //Get size of data behind "cursor"
+        auto size = ftell(file);
+        //Move "cursor" to beginnig of file
+        rewind(file);
+
+        //Setup buffer to store the read data (malloc() allocates memory space for the buffer)
+        auto buffer = (char*) malloc (sizeof(char)*size);
+
+        //Get data and add it to the buffer object. Result is the size of the read data
+        size_t result = fread(buffer, 1, size, file);
+        //Checks if the data in the read file is the same as the size of the file obtained before reading
+        if(result != size)
+        {
+            //If not then return with no value
+            return NULL;
+        }
+        //Close the filestream
+        fclose(file);
+        //Copy the data into the class
+        data = (string) buffer;
+        //Free the data
+        free(buffer);
+        
+    }
+
+    file::write(string data)
+    {
+        //Open the filestream with write permission
+        FILE* file = fopen(path.c_str(), "w");
+        //If no file is opened
+        if(!file)
+        {
+            //then return a failed write
+            return false;
+        }
+        //Write the characters data from the string to the file where result is the final file size
+        size_t result = fwrite(data.c_str(), sizeof(char), data.size(), file);
+        //Close the file stream
+        fclose(file);
+        //Return wether the file written is the same as the original data
+        return (result == data.size());
+    }
 }
+

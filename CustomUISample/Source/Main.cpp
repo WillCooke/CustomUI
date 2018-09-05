@@ -1,58 +1,89 @@
+#define TOTAL_PAGES 2
 
-// Include the only file
+// Include the CustomUI header
 #include "CustomUI.h"
+#include <stdio.h>
 
 // Create two pages with their names
-static CustomUI::Page page1("Page 1");
-static CustomUI::Page page2("Page 2");
+static CustomUI::Page home("Home");
+static CustomUI::Page fileView("Explore");
 
-// Static var
-static string text1 = "Sample";
+static IO::Button button(400, 400, 100, 100, {255, 0, 0, 255}, {0, 0, 0, 255}, "Button!");
+
+string text = "Not Set";
+
+std::function<void()> loadFunctions[2];
+
+//Page loading functions
+void homeLoad()
+{
+    text = "CustomUI.h is by XorTroll";
+    
+}
+
+void fileViewLoad()
+{
+    IO::file f("sdmc:/text.txt");
+    text = f.read();
+}
 
 // Rendering functions
-void page1render()
+void homeRender()
 {
-    page1.renderText(text1, 20, 20, { 0, 0, 255, 255 }, 50);
+    home.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
 }
 
-void page2render()
+void fileViewRender()
 {
-    page1.renderText("Text 2!", 30, 30, { 255, 0, 255, 255 }, 50);
+    //Render text to the screen
+    fileView.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
+    //Render the button
+    button.Render();
 }
+
 
 int main()
 {
-    // Init libs, with a title, a footer and a theme (you can create your own themes!)
-    CustomUI::init("Sample title", "Test footer", CustomUI::HorizonDark());
+    // Initialise CustomUI with the title, footer, and theme struct
+    CustomUI::init("Sample Header", "by Will Cooke", CustomUI::HorizonLight());
+
 
     // Set their rendering functions (what will be called every time the UI renders)
-    page1.onRender(page1render);
-    page2.onRender(page2render);
-
+    home.onRender(homeRender);
+    fileView.onRender(fileViewRender);
+    
+    
     // Add both pages to our UI
-    CustomUI::addPage(page1);
-    CustomUI::addPage(page2);
+    CustomUI::addPage(home);
+    loadFunctions[1] = homeLoad;
+    CustomUI::addPage(fileView);
+    loadFunctions[0] = fileViewLoad;
 
     // Main loop starts
     while(appletMainLoop())
     {
-        // Every main loop flushGraphics must be called
+        // Reset the graphics for the next frame
         CustomUI::flushGraphics();
 
-        // This is the proper way to access input with CustomUI as every loop the keys are updated
+        // CustomUI already pulls input data so we can just use that
         int keysDown = CustomUI::PressedInput;
-
-        // If A is pressed...
-        if(keysDown & KEY_A)
+         
+        
+        //Used to run the load functions for pages
+        if(keysDown & KEY_LSTICK_UP || keysDown & KEY_LSTICK_DOWN)
         {
-            // We change the text
-            text1 = "A pressed!";
-
-            // Every time we change something affecting the render we should call this to redraw/re-render the UI
-            CustomUI::renderGraphics();
+            loadFunctions[CustomUI::spage]();
         }
+
+        //If Button is tapped return to homebrew
+        if(button.CheckPress()) break;
+        //Return to homebrew menu on press of plus
+        if(keysDown & KEY_PLUS) break;
+
+        //Render what has been drawn to the screen at the end of the frame
+        CustomUI::renderGraphics();
+        
     }
 
-    // With exitApp we don't need to call "return 0"
     CustomUI::exitApp();
 }
