@@ -359,13 +359,13 @@ namespace CustomUI
         }
     }
 }
-//IO namespace by WillCooke
+//IO namespace by Will Cooke
 namespace IO
 {
     class Button
     {
     public:
-        Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text);
+        Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text, int fontSize);
         bool CheckPress();
         void Render();
     private:
@@ -374,8 +374,9 @@ namespace IO
         CustomUI::RGBA boxColour;
         CustomUI::RGBA textColour;
         string text;
+        int fontSize;
     };
-    Button::Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text)
+    Button::Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text, int fontSize)
     {
         this->X = X;
         this->Y = Y;
@@ -384,14 +385,16 @@ namespace IO
         this->boxColour = boxColour;
         this->textColour = textColour;
         this->text = text;
+        this->fontSize = fontSize;
     }
     
     inline bool Button::CheckPress()
     {
         //Pull the touch screen data
         touchPosition touch_pos;
-        hidTouchRead(&touch_pos, hidTouchCount()-1);
-        
+        //The program will only use the last touch the occoured during the frame, so less data has to be dealt with and the difference is neglegable
+        hidTouchRead(&touch_pos, hidTouchCount()-1); 
+        //Check if press was within the area
         if(touch_pos.px > this->X)
         {
             if(touch_pos.px < this->X + width)
@@ -413,30 +416,15 @@ namespace IO
         SDL_Color boxClr = {boxColour.R, boxColour.G, boxColour.B, boxColour.A};
         CustomUI::drawRect(X, Y, width, height, boxClr); //Render the box
         SDL_Color textClr = {textColour.R, textColour.G, textColour.B, textColour.A};
-        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), 10);
+        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), fontSize);
         CustomUI::drawText(X, Y, textClr, text, fnt); //Render the text
     }
 
-    class file
-    {
-    public:
-        file(string path);
-        void read();
-        void write(string data);
-    private:
-        string path;
-        string data;
-    };
-
-    file::file(string path)
-    {
-        this->path = path;
-    }
-
-    file::read()
+    
+    string readFile(string path)
     {
         //Open filestream with read permission
-        FILE* file = fopen(filename.c_str(), "r");
+        FILE* file = fopen(path.c_str(), "r");
         //Was a file read
         if(!file)
         {
@@ -465,14 +453,16 @@ namespace IO
         }
         //Close the filestream
         fclose(file);
-        //Copy the data into the class
-        data = (string) buffer;
+        //Copy the data into new string
+        string output = (string) buffer;
         //Free the data
         free(buffer);
+        //Renturn the data
+        return output;
         
     }
 
-    file::write(string data)
+    bool write(string path, string data)
     {
         //Open the filestream with write permission
         FILE* file = fopen(path.c_str(), "w");

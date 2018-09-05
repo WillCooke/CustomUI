@@ -31,9 +31,9 @@ include $(DEVKITPRO)/libnx/switch_rules
 #     - <libnx folder>/default_icon.jpg
 #---------------------------------------------------------------------------------
 
-APP_TITLE := CustomUI test
-APP_AUTHOR := XorTroll
-APP_VERSION := Test
+APP_TITLE := CustomUI with Buttons Demo
+APP_AUTHOR := XorTroll + Will Cooke
+APP_VERSION := Demo
 
 ICON := Icon.jpg
 TARGET		:=	CustomUITest

@@ -5,38 +5,36 @@
 #include <stdio.h>
 
 // Create two pages with their names
-static CustomUI::Page home("Home");
-static CustomUI::Page fileView("Explore");
+static CustomUI::Page page1("Page 1");
+static CustomUI::Page page2("Page 2");
 
-static IO::Button button(400, 400, 100, 100, {255, 0, 0, 255}, {0, 0, 0, 255}, "Button!");
+static IO::Button button(400, 400, 100, 100, {255, 0, 0, 255}, {0, 0, 0, 255}, "Button!", 30);
 
 string text = "Not Set";
 
-std::function<void()> loadFunctions[2];
+std::function<void()> loadFunctions[TOTAL_PAGES];
 
 //Page loading functions
-void homeLoad()
+void page1Load()
 {
-    text = "CustomUI.h is by XorTroll";
-    
+    text = IO::readFile("sdmc:/text.txt");
 }
 
-void fileViewLoad()
+void page2Load()
 {
-    IO::file f("sdmc:/text.txt");
-    text = f.read();
+    text = "CustomUI.h is by XorTroll";
 }
 
 // Rendering functions
-void homeRender()
+void page1Render()
 {
-    home.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
+    page1.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
 }
 
-void fileViewRender()
+void page2Render()
 {
     //Render text to the screen
-    fileView.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
+    page2.renderText(text, 0, 0, {0, 0, 0, 255}, 50);
     //Render the button
     button.Render();
 }
@@ -49,16 +47,17 @@ int main()
 
 
     // Set their rendering functions (what will be called every time the UI renders)
-    home.onRender(homeRender);
-    fileView.onRender(fileViewRender);
+    page1.onRender(page1Render);
+    page2.onRender(page2Render);
     
     
     // Add both pages to our UI
-    CustomUI::addPage(home);
-    loadFunctions[1] = homeLoad;
-    CustomUI::addPage(fileView);
-    loadFunctions[0] = fileViewLoad;
+    CustomUI::addPage(page1);
+    loadFunctions[1] = page1Load;
+    CustomUI::addPage(page2);
+    loadFunctions[0] = page2Load;
 
+    loadFunctions[0]();
     // Main loop starts
     while(appletMainLoop())
     {
@@ -76,7 +75,13 @@ int main()
         }
 
         //If Button is tapped return to homebrew
-        if(button.CheckPress()) break;
+        if(button.CheckPress()) 
+        {
+            //Write to the file
+            IO::write("sdmc:/text.txt", "...is from 1919!");
+            //Reload the page!
+            page1Load();
+        }
         //Return to homebrew menu on press of plus
         if(keysDown & KEY_PLUS) break;
 
