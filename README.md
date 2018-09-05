@@ -1,6 +1,7 @@
 # CustomUI
 - Simple C++ libnx library for creating switch-like UI homebrew apps!
-- Support for Buttons Using Input::Button!
+- Support for Buttons Using IO::Button!
+- Support for Reading and Writing to files on the SD Card using IO::readFile() and IO::writeFile
 
 # How can I use them?
 
