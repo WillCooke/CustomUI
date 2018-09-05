@@ -367,6 +367,8 @@ namespace IO
     public:
         Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text, int fontSize);
         bool CheckPress();
+        bool CheckHold();
+        bool CheckRelease();
         void Render();
     private:
         int X, Y;
@@ -375,6 +377,8 @@ namespace IO
         CustomUI::RGBA textColour;
         string text;
         int fontSize;
+        bool isPressed;
+        bool pressedLastFrame;
     };
     Button::Button(int X, int Y, int width, int height, CustomUI::RGBA boxColour, CustomUI::RGBA textColour, string text, int fontSize)
     {
@@ -390,10 +394,38 @@ namespace IO
     
     inline bool Button::CheckPress()
     {
+        if(isPressed == pressedLastFrame) return false;
+        else if(isPressed) return true;
+        else return false;
+    }
+
+    inline bool Button::CheckHold()
+    {
+        return isPressed;
+    }
+
+    inline bool Button::CheckRelease()
+    {
+        if(isPressed == pressedLastFrame) return false;
+        else if(!isPressed) return true;
+        else return false;
+    }
+
+    inline void Button::Render()
+    {
+        //Set lastframepress
+        pressedLastFrame = isPressed;
+        SDL_Color boxClr = {boxColour.R, boxColour.G, boxColour.B, boxColour.A};
+        CustomUI::drawRect(X, Y, width, height, boxClr); //Render the box
+        SDL_Color textClr = {textColour.R, textColour.G, textColour.B, textColour.A};
+        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), fontSize);
+        CustomUI::drawText(X, Y, textClr, text, fnt); //Render the text
+        //---Check for Press---//
         //Pull the touch screen data
         touchPosition touch_pos;
         //The program will only use the last touch the occoured during the frame, so less data has to be dealt with and the difference is neglegable
         hidTouchRead(&touch_pos, hidTouchCount()-1); 
+        
         //Check if press was within the area
         if(touch_pos.px > this->X)
         {
@@ -403,21 +435,13 @@ namespace IO
                 {
                     if( touch_pos.py < this->Y + height)
                     {
-                        return true;
-                }
+                        isPressed = true;
+                        return;
+                    }
                 }
             }
         }
-        return false;
-    }
-
-    inline void Button::Render()
-    {
-        SDL_Color boxClr = {boxColour.R, boxColour.G, boxColour.B, boxColour.A};
-        CustomUI::drawRect(X, Y, width, height, boxClr); //Render the box
-        SDL_Color textClr = {textColour.R, textColour.G, textColour.B, textColour.A};
-        TTF_Font* fnt = TTF_OpenFont(CustomUI::ttf.c_str(), fontSize);
-        CustomUI::drawText(X, Y, textClr, text, fnt); //Render the text
+        isPressed = false;
     }
 
     
