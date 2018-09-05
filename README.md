@@ -1,5 +1,6 @@
 # CustomUI
 - Simple C++ libnx library for creating switch-like UI homebrew apps!
+- Support for Buttons Using Input::Button!
 
 # How can I use them?
 
